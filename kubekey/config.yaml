@@ -1,0 +1,59 @@
+apiVersion: kubekey.kubesphere.io/v1
+kind: Config
+spec:
+  zone: ""
+
+  kubernetes:
+    kube_version: v1.34.0
+    helm_version: v3.18.5
+    sandbox_image:
+      tag: "3.10.1"
+    control_plane_endpoint:
+      type: local
+      kube_vip:
+        image:
+          tag: v0.7.2
+      haproxy:
+        image:
+          tag: 2.9.6-alpine
+
+  etcd:
+    etcd_version: v3.6.5
+
+  image_registry:
+    type: ""
+    ha_vip: ""
+
+  cri:
+    container_manager: containerd
+    crictl_version: v1.34.0
+
+  cni:
+    type: calico
+    multi_cni: none
+    calico_version: v3.31.3
+
+  storage_class:
+    local:
+      enabled: true
+      default: true
+    localpv_provisioner_version: 4.4.0
+    nfs:
+      enabled: false
+
+  dns:
+    coredns:
+      image:
+        tag: v1.12.1
+    nodelocaldns:
+      enabled: true
+      image:
+        tag: 1.26.4
+
+  image_manifests: []
+  image_registry:
+    type: kubekey
+    private_registry: "registry.cn-hangzhou.aliyuncs.com/google_containers"
+    auths: {}
+    registry_mirrors: []
+    insecure_registries: []

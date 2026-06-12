@@ -1,0 +1,27 @@
+---
+timezone: Asia/Tehran
+
+cluster_hosts:
+  - ip: 192.168.100.101
+    name: master1
+  - ip: 192.168.100.111
+    name: worker1
+  - ip: 192.168.100.112
+    name: worker2
+  - ip: 192.168.100.113
+    name: worker3
+
+common_packages:
+  - curl
+  - wget
+  - socat
+  - conntrack
+  - ebtables
+  - ipset
+  - ipvsadm
+  - chrony
+  - tar
+  - unzip
+  - vim
+  - net-tools
+  - bash-completion

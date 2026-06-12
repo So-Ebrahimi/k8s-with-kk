@@ -1,0 +1,28 @@
+# Home/user files
+.bash_history
+.bashrc
+.bash_logout
+.profile
+.gitconfig
+.Xauthority
+.lesshst
+.sudo_as_admin_successful
+.wget-hsts
+
+# Caches
+.cache/
+.ansible/
+__pycache__/
+*.log
+
+# SSH/secrets
+.ssh/
+*.pem
+*.key
+*.crt
+*.env
+.env
+
+kubekey/kubekey/
+kubekey/kk/
+

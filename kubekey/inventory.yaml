@@ -1,0 +1,61 @@
+apiVersion: kubekey.kubesphere.io/v1
+kind: Inventory
+metadata:
+  name: default
+spec:
+  hosts:
+    master1:
+      connector:
+        type: ssh
+        host: 192.168.100.101
+        port: 22
+        user: user
+        password: a
+      internal_ipv4: 192.168.100.101
+
+    worker1:
+      connector:
+        type: ssh
+        host: 192.168.100.111
+        port: 22
+        user: user
+        password: a
+      internal_ipv4: 192.168.100.111
+
+    worker2:
+      connector:
+        type: ssh
+        host: 192.168.100.112
+        port: 22
+        user: user
+        password: a
+      internal_ipv4: 192.168.100.112
+
+    worker3:
+      connector:
+        type: ssh
+        host: 192.168.100.113
+        port: 22
+        user: user
+        password: a
+      internal_ipv4: 192.168.100.113
+
+  groups:
+    k8s_cluster:
+      groups:
+        - kube_control_plane
+        - kube_worker
+
+    kube_control_plane:
+      hosts:
+        - master1
+
+    kube_worker:
+      hosts:
+        - worker1
+        - worker2
+        - worker3
+
+    etcd:
+      hosts:
+        - master1
