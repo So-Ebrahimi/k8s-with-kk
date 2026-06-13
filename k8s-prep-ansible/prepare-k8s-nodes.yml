@@ -152,58 +152,65 @@
       when: ansible_os_family == "Debian"
 
 
-    - name: Create containerd registry mirror directory for Docker Hub
-      ansible.builtin.file:
-        path: /etc/containerd/certs.d/docker.io
-        state: directory
-        mode: "0755"
+        #    - name: Create containerd registry mirror directory for Docker Hub
+        #      ansible.builtin.file:
+        #        path: /etc/containerd/certs.d/docker.io
+        #        state: directory
+        #        mode: "0755"
+        #
+        #    - name: Configure containerd Docker Hub registry mirrors
+        #      ansible.builtin.copy:
+        #        dest: /etc/containerd/certs.d/docker.io/hosts.toml
+        #        mode: "0644"
+        #        content: |
+        #          server = "https://registry-1.docker.io"
+        #
+        #          [host."https://registry.arvancloud.ir"]
+        #            capabilities = ["pull", "resolve"]
+        #
+        #          [host."https://docker.arvancloud.ir"]
+        #            capabilities = ["pull", "resolve"]
+        #
+        #          [host."https://docker.shatel.ir"]
+        #            capabilities = ["pull", "resolve"]
+        #
+        #          [host."https://docker.iranserver.com"]
+        #            capabilities = ["pull", "resolve"]
+        #
+        #          [host."https://mirror-docker.runflare.com"]
+        #            capabilities = ["pull", "resolve"]
+        #
+        #    - name: Check if containerd service exists
+        #      ansible.builtin.command: systemctl list-unit-files containerd.service
+        #      register: containerd_service_check
+        #      changed_when: false
+        #      failed_when: false
+        #    - name: Create containerd registry mirror directory for registry.k8s.io
+        #      ansible.builtin.file:
+        #        path: /etc/containerd/certs.d/registry.k8s.io
+        #        state: directory
+        #        mode: "0755"
+        #
+        #    - name: Configure containerd Kubernetes registry mirror
+        #      ansible.builtin.copy:
+        #        dest: /etc/containerd/certs.d/registry.k8s.io/hosts.toml
+        #        mode: "0644"
+        #        content: |
+        #          server = "https://registry.k8s.io"
+        #    
+        #          [host."https://registry.cn-hangzhou.aliyuncs.com/google_containers"]
+        #            capabilities = ["pull", "resolve"]
+        #    - name: Ensure containerd config.toml has config_path set
+        #      ansible.builtin.lineinfile:
+        #        path: /etc/containerd/config.toml
+        #        regexp: '^\s*config_path\s*='
+        #        line: '    config_path = "/etc/containerd/certs.d"'
+        #        insertafter: '\[plugins\."io\.containerd\.grpc\.v1\.cri"\.registry\]'
+        #        create: false
+        #      when: containerd_service_check.rc == 0
 
-    - name: Configure containerd Docker Hub registry mirrors
-      ansible.builtin.copy:
-        dest: /etc/containerd/certs.d/docker.io/hosts.toml
-        mode: "0644"
-        content: |
-          server = "https://registry-1.docker.io"
-
-          [host."https://registry.arvancloud.ir"]
-            capabilities = ["pull", "resolve"]
-
-          [host."https://docker.arvancloud.ir"]
-            capabilities = ["pull", "resolve"]
-
-          [host."https://docker.shatel.ir"]
-            capabilities = ["pull", "resolve"]
-
-          [host."https://docker.iranserver.com"]
-            capabilities = ["pull", "resolve"]
-
-          [host."https://mirror-docker.runflare.com"]
-            capabilities = ["pull", "resolve"]
-
-    - name: Check if containerd service exists
-      ansible.builtin.command: systemctl list-unit-files containerd.service
-      register: containerd_service_check
-      changed_when: false
-      failed_when: false
-    - name: Create containerd registry mirror directory for registry.k8s.io
-      ansible.builtin.file:
-        path: /etc/containerd/certs.d/registry.k8s.io
-        state: directory
-        mode: "0755"
-
-    - name: Configure containerd Kubernetes registry mirror
-      ansible.builtin.copy:
-        dest: /etc/containerd/certs.d/registry.k8s.io/hosts.toml
-        mode: "0644"
-        content: |
-          server = "https://registry.k8s.io"
-    
-          [host."https://registry.cn-hangzhou.aliyuncs.com/google_containers"]
-            capabilities = ["pull", "resolve"]
-    
-    - name: Restart containerd if installed
-      ansible.builtin.service:
-        name: containerd
-        state: restarted
-        enabled: true
-      when: containerd_service_check.rc == 0
+        #    - name: Restart containerd after config_path fix
+        #      ansible.builtin.service:
+        #        name: containerd
+        #        state: restarted
+        #      when: containerd_service_check.rc == 0

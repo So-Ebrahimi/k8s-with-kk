@@ -1,13 +1,16 @@
 apiVersion: kubekey.kubesphere.io/v1
 kind: Config
+
 spec:
-  zone: ""
+  zone: "cn"
 
   kubernetes:
     kube_version: v1.34.0
+    image_repository: "registry.cn-hangzhou.aliyuncs.com/google_containers"
     helm_version: v3.18.5
     sandbox_image:
-      tag: "3.10.1"
+      tag: "3.10"
+
     control_plane_endpoint:
       type: local
       kube_vip:
@@ -19,10 +22,6 @@ spec:
 
   etcd:
     etcd_version: v3.6.5
-
-  image_registry:
-    type: ""
-    ha_vip: ""
 
   cri:
     container_manager: containerd
@@ -51,9 +50,19 @@ spec:
         tag: 1.26.4
 
   image_manifests: []
+
   image_registry:
-    type: kubekey
     private_registry: "registry.cn-hangzhou.aliyuncs.com/google_containers"
-    auths: {}
-    registry_mirrors: []
+    namespace_override: ""
+    registry_mirrors:
+      - "https://registry.cn-hangzhou.aliyuncs.com"
     insecure_registries: []
+
+  system:
+    postInstall:
+      - name: fix containerd sandbox image
+        bash: |
+          sed -i 's#sandbox_image = ".*"#sandbox_image = "registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.10"#' /etc/containerd/config.toml
+          systemctl daemon-reload
+          systemctl restart containerd
+          systemctl restart kubelet
