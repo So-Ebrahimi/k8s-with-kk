@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: StatefulSet
+
+metadata:
+  name: {{ include "clickhouse.fullname" . }}
+
+spec:
+  serviceName: {{ include "clickhouse.fullname" . }}
+
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: {{ include "clickhouse.fullname" . }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ include "clickhouse.fullname" . }}
+
+    spec:
+      containers:
+        - name: clickhouse
+
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          env:
+            - name: CLICKHOUSE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "clickhouse.fullname" . }}
+                  key: CLICKHOUSE_USER
+
+            - name: CLICKHOUSE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "clickhouse.fullname" . }}
+                  key: CLICKHOUSE_PASSWORD
+
+          ports:
+            - name: http
+              containerPort: 8123
+
+            - name: native
+              containerPort: 9000
+
+            - name: interserver
+              containerPort: 9009
+
+          volumeMounts:
+            - name: clickhouse-data
+              mountPath: /var/lib/clickhouse
+
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+
+  volumeClaimTemplates:
+    - metadata:
+        name: clickhouse-data
+
+      spec:
+        accessModes:
+          - {{ .Values.persistence.accessMode }}
+
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
+
+{{- if .Values.persistence.storageClassName }}
+        storageClassName: {{ .Values.persistence.storageClassName }}
+{{- end }}

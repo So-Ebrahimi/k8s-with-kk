@@ -1,0 +1,13 @@
+ClickHouse deployed successfully.
+
+HTTP Interface:
+http://<service>:8123
+
+Native Client:
+<service>:9000
+
+Username:
+{{ .Values.auth.username }}
+
+Password:
+{{ .Values.auth.password }}
