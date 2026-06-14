@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "clickhouse-local.fullname" . }}-headless
+  labels:
+    {{- include "clickhouse-local.labels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: clickhouse
+  ports:
+    - name: http
+      port: {{ .Values.service.httpPort }}
+      targetPort: http
+    - name: tcp
+      port: {{ .Values.service.tcpPort }}
+      targetPort: tcp
+    - name: interserver
+      port: {{ .Values.service.interserverPort }}
+      targetPort: interserver
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "clickhouse-local.fullname" . }}
+  labels:
+    {{- include "clickhouse-local.labels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: clickhouse
+  ports:
+    - name: http
+      port: {{ .Values.service.httpPort }}
+      targetPort: http
+    - name: tcp
+      port: {{ .Values.service.tcpPort }}
+      targetPort: tcp
+    - name: interserver
+      port: {{ .Values.service.interserverPort }}
+      targetPort: interserver

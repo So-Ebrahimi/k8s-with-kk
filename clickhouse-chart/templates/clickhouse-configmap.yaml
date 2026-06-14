@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "clickhouse-local.fullname" . }}-config
+  labels:
+    {{- include "clickhouse-local.labels" . | nindent 4 }}
+    app.kubernetes.io/component: clickhouse
+data:
+  config.xml: |
+    <clickhouse>
+      <logger>
+        <level>information</level>
+        <console>true</console>
+        <log>/var/lib/clickhouse/clickhouse-server.log</log>
+        <errorlog>/var/lib/clickhouse/clickhouse-server.err.log</errorlog>
+      </logger>
+      <user_directories>
+        <users_xml>
+          <path>users.xml</path>
+        </users_xml>
+        <local_directory>
+          <path>/var/lib/clickhouse/access/</path>
+        </local_directory>
+      </user_directories>
+      <listen_host>0.0.0.0</listen_host>
+
+      <http_port>{{ .Values.service.httpPort }}</http_port>
+      <tcp_port>{{ .Values.service.tcpPort }}</tcp_port>
+      <interserver_http_port>{{ .Values.service.interserverPort }}</interserver_http_port>
+      <interserver_http_host from_env="HOSTNAME"/>
+      <remote_servers>
+        <local_cluster>
+          <shard>
+            <internal_replication>true</internal_replication>
+            {{- range $i := until (.Values.clickhouse.replicas | int) }}
+            <replica>
+              <host>{{ include "clickhouse-local.fullname" $ }}-{{ $i }}.{{ include "clickhouse-local.fullname" $ }}-headless.{{ $.Release.Namespace }}.svc.cluster.local</host>
+              <port>{{ $.Values.service.tcpPort }}</port>
+            </replica>
+            {{- end }}
+          </shard>
+        </local_cluster>
+      </remote_servers>
+
+      <zookeeper>
+        {{- range $i := until (.Values.keeper.replicas | int) }}
+        <node>
+          <host>{{ include "clickhouse-local.keeperFullname" $ }}-{{ $i }}.{{ include "clickhouse-local.keeperFullname" $ }}-headless.{{ $.Release.Namespace }}.svc.cluster.local</host>
+          <port>{{ $.Values.service.keeperPort }}</port>
+        </node>
+        {{- end }}
+      </zookeeper>
+
+      <distributed_ddl>
+        <path>/clickhouse/task_queue/ddl</path>
+      </distributed_ddl>
+
+      <macros>
+        <cluster>local_cluster</cluster>
+        <shard>01</shard>
+        <replica from_env="HOSTNAME"/>
+      </macros>
+
+      <path>/var/lib/clickhouse/</path>
+      <tmp_path>/var/lib/clickhouse/tmp/</tmp_path>
+      <user_files_path>/var/lib/clickhouse/user_files/</user_files_path>
+      <format_schema_path>/var/lib/clickhouse/format_schemas/</format_schema_path>
+    </clickhouse>
+
+  users.xml: |
+    <clickhouse>
+      <profiles>
+        <default>
+          <load_balancing>random</load_balancing>
+          <async_insert>1</async_insert>
+          <wait_for_async_insert>0</wait_for_async_insert>
+          <async_insert_busy_timeout_ms>1000</async_insert_busy_timeout_ms>
+        </default>
+      </profiles>
+      <users>
+        <default>
+          <password></password>
+          <networks>
+            <ip>::/0</ip>
+          </networks>
+          <profile>default</profile>
+          <quota>default</quota>
+          <access_management>1</access_management>
+        </default>
+      </users>
+
+      <quotas>
+        <default/>
+      </quotas>
+    </clickhouse>

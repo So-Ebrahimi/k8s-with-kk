@@ -1,7 +1,6 @@
 apiVersion: v2
-name: clickhouse
-description: ClickHouse Server
+name: clickhouse-local
+description: Local ClickHouse cluster with 3 replicas and ClickHouse Keeper using ArvanCloud Docker mirror full image addresses
 type: application
-
 version: 0.1.0
-appVersion: "25.5"
+appVersion: "26.3"

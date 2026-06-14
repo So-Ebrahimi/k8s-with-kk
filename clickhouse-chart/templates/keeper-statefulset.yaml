@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "clickhouse-local.keeperFullname" . }}
+  labels:
+    {{- include "clickhouse-local.labels" . | nindent 4 }}
+    app.kubernetes.io/component: keeper
+spec:
+  serviceName: {{ include "clickhouse-local.keeperFullname" . }}-headless
+  replicas: {{ .Values.keeper.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: keeper
+  template:
+    metadata:
+      labels:
+        {{- include "clickhouse-local.labels" . | nindent 8 }}
+        app.kubernetes.io/component: keeper
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: keeper
+          image: {{ include "clickhouse-local.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          command:
+            - /bin/bash
+            - -ec
+            - |
+              ORDINAL="${HOSTNAME##*-}"
+              SERVER_ID="$((ORDINAL + 1))"
+              sed "s/__SERVER_ID__/${SERVER_ID}/g" /etc/clickhouse-keeper-template/keeper_config.xml > /etc/clickhouse-keeper/keeper_config.xml
+              exec clickhouse-keeper --config-file=/etc/clickhouse-keeper/keeper_config.xml
+          ports:
+            - name: keeper
+              containerPort: {{ .Values.service.keeperPort }}
+            - name: raft
+              containerPort: {{ .Values.service.keeperRaftPort }}
+          volumeMounts:
+            - name: keeper-config-template
+              mountPath: /etc/clickhouse-keeper-template
+            - name: keeper-config
+              mountPath: /etc/clickhouse-keeper
+            - name: keeper-data
+              mountPath: /var/lib/clickhouse-keeper
+          resources:
+            {{- toYaml .Values.keeper.resources | nindent 12 }}
+      volumes:
+        - name: keeper-config-template
+          configMap:
+            name: {{ include "clickhouse-local.keeperFullname" . }}-config
+        - name: keeper-config
+          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: keeper-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- if .Values.keeper.storage.storageClassName }}
+        storageClassName: {{ .Values.keeper.storage.storageClassName }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.keeper.storage.size }}
